@@ -95,7 +95,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/">
             <h1 className="text-xl font-bold tracking-wide cursor-pointer">
-              🌍 WanderLux
+              🌍 TravelBLOGG
             </h1>
           </Link>
 
