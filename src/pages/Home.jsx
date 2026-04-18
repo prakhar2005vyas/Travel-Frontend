@@ -30,16 +30,31 @@ export default function Home() {
 
   // Persist comments
   const handleComment = (postId) => {
-    if (!input[postId]?.trim()) return;
-    const newComment = input[postId].trim();
-    const updated = {
-      ...comments,
-      [postId]: [...(comments[postId] || []), newComment],
-    };
-    setComments(updated);
-    localStorage.setItem("comments", JSON.stringify(updated));
-    setInput((prev) => ({ ...prev, [postId]: "" }));
+  if (!input[postId]?.trim()) return;
+
+  // 👇 get logged in user
+  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+  const commenterName = loggedInUser ? loggedInUser.name : "Guest";
+
+  const newComment = {
+    text: input[postId].trim(),
+    name: commenterName,         // 👈 save name with comment
+    time: new Date().toLocaleString("en-IN", {
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
   };
+
+  const updated = {
+    ...comments,
+    [postId]: [...(comments[postId] || []), newComment],
+  };
+  setComments(updated);
+  localStorage.setItem("comments", JSON.stringify(updated));
+  setInput((prev) => ({ ...prev, [postId]: "" }));
+};
 
   // Share
   const handleShare = (postId) => {
@@ -131,63 +146,66 @@ export default function Home() {
                     </span>
                   </div>
                 </div>
+<div className="p-4">
+  <h3 className="font-semibold text-lg">{post.title}</h3>
+  <p className="text-sm text-gray-500 mt-1 line-clamp-2">{post.desc}</p>
 
-                <div className="p-4">
-                  <h3 className="font-semibold text-lg">{post.title}</h3>
-                  <p className="text-sm text-gray-500 mt-1 line-clamp-2">{post.desc}</p>
+  {/* 👇 Author + Date */}
+  <div className="flex items-center gap-2 mt-2 text-xs text-gray-400">
+    <span>✍️ <span className="font-medium text-gray-600">{post.author || "Unknown"}</span></span>
+    <span>•</span>
+    <span>🕒 {post.createdAt || "Unknown date"}</span>
+  </div>
 
-                  {/* Action Buttons */}
-                  <div className="flex gap-4 mt-3 text-xl">
-                    {/* Like */}
-                    <motion.button
-                      whileTap={{ scale: 1.3 }}
-                      onClick={() => toggleLikePost(post.id)}
-                    >
-                      {likedPosts[post.id] ? "❤️" : "🤍"}
-                    </motion.button>
+  {/* Like + Share buttons — keep as is */}
+  <div className="flex gap-4 mt-3 text-xl">
+    <motion.button whileTap={{ scale: 1.3 }} onClick={() => toggleLikePost(post.id)}>
+      {likedPosts[post.id] ? "❤️" : "🤍"}
+    </motion.button>
+    <motion.button whileTap={{ scale: 1.2 }} onClick={() => handleShare(post.id)} title="Copy link">
+      🔗
+    </motion.button>
+  </div>
 
-                    {/* Share */}
-                    <motion.button
-                      whileTap={{ scale: 1.2 }}
-                      onClick={() => handleShare(post.id)}
-                      title="Copy link"
-                    >
-                      🔗
-                    </motion.button>
-                  </div>
-
-                  {/* Comments */}
-                  <div className="mt-4">
-                    {(comments[post.id] || []).length > 0 && (
-                      <div className="mb-2 space-y-1">
-                        {(comments[post.id] || []).map((c, i) => (
-                          <p key={i} className="text-sm text-gray-700">
-                            <span className="font-semibold">User</span> {c}
-                          </p>
-                        ))}
-                      </div>
-                    )}
-                    <div className="flex gap-2 mt-2">
-                      <input
-                        value={input[post.id] || ""}
-                        onChange={(e) =>
-                          setInput({ ...input, [post.id]: e.target.value })
-                        }
-                        onKeyDown={(e) =>
-                          e.key === "Enter" && handleComment(post.id)
-                        }
-                        placeholder="Add a comment..."
-                        className="border border-gray-200 rounded-full px-3 py-1 text-sm flex-1 outline-none"
-                      />
-                      <button
-                        onClick={() => handleComment(post.id)}
-                        className="bg-black text-white px-3 py-1 text-sm rounded-full"
-                      >
-                        Post
-                      </button>
-                    </div>
-                  </div>
-                </div>
+  {/* Comments */}
+  <div className="mt-4">
+    {(comments[post.id] || []).length > 0 && (
+      <div className="mb-2 space-y-1">
+        {(comments[post.id] || []).map((c, i) => (
+          <p key={i} className="text-sm text-gray-700">
+            {/* 👇 Show commenter name + time */}
+            <span className="font-semibold text-black">
+              {typeof c === "object" ? c.name : "User"}
+            </span>
+            <span className="text-gray-400 text-xs ml-1">
+              {typeof c === "object" ? c.time : ""}
+            </span>
+            <span className="ml-1">
+              {typeof c === "object" ? c.text : c}
+            </span>
+          </p>
+        ))}
+      </div>
+    )}
+    <div className="flex gap-2 mt-2">
+      <input
+        value={input[post.id] || ""}
+        onChange={(e) => setInput({ ...input, [post.id]: e.target.value })}
+        onKeyDown={(e) => e.key === "Enter" && handleComment(post.id)}
+        placeholder="Add a comment..."
+        className="border border-gray-200 rounded-full px-3 py-1 text-sm flex-1 outline-none"
+      />
+      <button
+        onClick={() => handleComment(post.id)}
+        className="bg-black text-white px-3 py-1 text-sm rounded-full"
+      >
+        Post
+      </button>
+    </div>
+  </div>
+</div>
+                
+                
               </motion.div>
             ))}
           </div>

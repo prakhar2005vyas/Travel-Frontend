@@ -20,29 +20,42 @@ export default function CreatePost() {
 };
 
   const handleSubmit = () => {
-    if (!title || !desc || !preview) {
-      alert("Fill all fields");
-      return;
-    }
+  if (!title || !desc || !preview) {
+    alert("Fill all fields");
+    return;
+  }
 
-    const newPost = {
-      id: Date.now(),
-      title,
-      desc,
-      image: preview,
-    };
+  // 👇 Get logged in user
+  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+  if (!loggedInUser) {
+    alert("Please login first to create a post!");
+    return;
+  }
 
-    const oldPosts = JSON.parse(localStorage.getItem("posts")) || [];
-    localStorage.setItem("posts", JSON.stringify([newPost, ...oldPosts]));
-
-    alert("Post created!");
-
-    setTitle("");
-    setDesc("");
-    setImage(null);
-    setPreview(null);
+  const newPost = {
+    id: Date.now(),
+    title,
+    desc,
+    image: preview,
+    author: loggedInUser.name,   // 👈 save author name
+    createdAt: new Date().toLocaleString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }),                           // 👈 save date & time
   };
 
+  const oldPosts = JSON.parse(localStorage.getItem("posts")) || [];
+  localStorage.setItem("posts", JSON.stringify([newPost, ...oldPosts]));
+  alert("Post created!");
+  setTitle("");
+  setDesc("");
+  setPreview(null);
+};
+
+  
   return (
     <div className="p-10 max-w-xl mx-auto">
       <h2 className="text-2xl font-semibold mb-6">Create Travel Post</h2>
